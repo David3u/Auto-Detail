@@ -8,6 +8,14 @@ from colorama import Fore, Style, init
 from InquirerPy import inquirer
 
 import backend
+import config 
+
+
+@click.command()
+def set_key():
+    """Store an API key in the config file."""
+    key = click.prompt("Enter your Google Gemini API key", hide_input=True).strip()
+    config.set_api_key(key)  
 
 
 @click.command()

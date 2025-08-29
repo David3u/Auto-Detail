@@ -1,0 +1,6 @@
+summary: |-
+  Implement local API key management using a configuration file.
+type: |-
+  feature
+description: |-
+  This PR adds local API key management, storing the Google Gemini API key in a config file (~/.config/auto_detail/config.toml). Users can set their key with `auto_detail set_key`, or the tool will prompt them if no key is found, improving key setup and accessibility.

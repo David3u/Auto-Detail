@@ -12,6 +12,7 @@ from google import genai
 from google.genai import types
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as LSS
+import config
 
 DETAIL_ROOT = Path(".detail/notes")
 
@@ -144,7 +145,7 @@ def _get_gemini_client() -> genai.Client:
     Returns:
         The Gemini API client.
     """
-    return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    return genai.Client(api_key=config.get_api_key())
 
 
 def _get_new_detail_description() -> Dict[str, Any]:

@@ -16,3 +16,4 @@ def main(ctx: click.Context, reasons: str) -> None:
 
 main.add_command(auto_detail.new)
 main.add_command(auto_detail.list)
+main.add_command(auto_detail.set_key)
