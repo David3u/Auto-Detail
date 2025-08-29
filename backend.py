@@ -145,42 +145,35 @@ def _get_gemini_client() -> genai.Client:
 
 
 def _get_new_detail_description() -> Dict[str, Any]:
-    """Returns the tool description for the new_detail function.
-
-    Returns:
-        The tool description for the new_detail function.
-    """
+    """Returns the tool description for the new_detail function."""
     return {
         "name": "new_detail",
-        "description": "This tool generates a new PR detail based on the diff of the last commit.",
+        "description": "Generate a new pull request detail from the last commit diff.",
         "parameters": {
             "type": "OBJECT",
             "properties": {
                 "summary": {
                     "type": "STRING",
                     "description": (
-                        "A brief and concise ~1 sentence, <20 words, summary of the PR."
-                        " Avoid repeating words that add no additional meaning."
-                        " The summary should be easy to understand."
-                    )
+                        "One short sentence (<20 words) summarizing the PR. "
+                        "Be concise, clear, and avoid filler words."
+                    ),
                 },
                 "type": {
                     "type": "STRING",
-                    "description": "The type of PR",
+                    "description": "The PR category. API is a MAJOR change to the public API.",
                     "enum": ["feature", "bug", "api", "trivial"],
                 },
                 "description": {
                     "type": "STRING",
                     "description": (
-                        "A more detailed but concise description of the PR. "
-                        "Should be under 60 words."
+                        "A clear, concise explanation of the PR (under 60 words)."
                     ),
                 },
             },
             "required": ["summary", "type", "description"],
         },
     }
-
 
 def _generate_content(
     client: genai.Client, system_instruction: str, content: List[types.Content]
@@ -266,9 +259,10 @@ def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
     """
     client = _get_gemini_client()
     system_instruction = (
-        "You are a skilled software engineer. Your task is to effectively and skillfully "
-        "review the diff of a pull request and generate new PR detail(s) in simple language. "
-        f"Reasons for pr: {pr_reasons}"
+        "You are a senior software engineer. Review the pull request diff and "
+        "write a clear and concise description of the changes. "
+        "Generate a new PR detail in simple language. "
+        f"\n\n Reasons for pr: {pr_reasons}"
     )
     contents = [types.Content(role="user", parts=[types.Part(text=diff)])]
 
