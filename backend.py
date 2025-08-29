@@ -11,6 +11,7 @@ from datetime import date
 from pathlib import Path
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as LSS
+from colorama import Fore, Style
 
 DETAIL_ROOT = Path(".detail/notes")
 
@@ -47,6 +48,12 @@ def write_note(description: str, summary: str, type_: str) -> Path:
 
     return file_path
 
+def list_details():
+    for file_path in DETAIL_ROOT.glob("*.yaml"):
+        print(Fore.YELLOW + str(file_path) + Style.RESET_ALL)
+        with file_path.open("r", encoding="utf-8") as f:
+            print(f.read())
+            
 def clear_details():
     repo = Repo(".")
     repo_root = Path(repo.working_tree_dir).resolve()

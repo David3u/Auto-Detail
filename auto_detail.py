@@ -6,19 +6,42 @@ from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 
 @click.command()
-def new():
-    main()
+@click.option("--reasons", help="Reasons for the PR.", default="")
+def new(reasons):
+    main(reasons)
 
-def main():
+@click.command()
+def list():
+    backend.list_details()
+
+
+def pretty_box():
+    lines = [
+        "Enter a reason for this PR",
+        "Use #issue_num to reference issues",
+        "(Leave blank to finish)"
+    ]
+
+    width = max(len(line) for line in lines) + 4  # padding
+
+    # Rounded borders
+    top = "╭" + "─" * width + "╮"
+    bottom = "╰" + "─" * width + "╯"
+
+    border_color = Fore.GREEN    
+    text_color = Fore.WHITE
+
+    print(border_color + top)
+    for line in lines:
+        print(border_color + "│ " + text_color + line.center(width - 2) + border_color + " │")
+    print(border_color + bottom)
+
+def main(reasons):
     init(autoreset=True)
 
-    pr_reasons = []
+    pr_reasons = [reasons]
 
-    print("╔══════════════════════════════════════╗")
-    print("║  Enter a reason for this PR          ║")
-    print("║  Use I:XX to reference issues        ║")
-    print("║  (leave blank to finish)             ║")
-    print("╚══════════════════════════════════════╝")
+    pretty_box()
 
     reason = input(Fore.YELLOW + "➤ " + Style.RESET_ALL)
     while True:

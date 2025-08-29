@@ -1,0 +1,6 @@
+description: |-
+  Introduced a new 'list' command to display existing PR details. The PR reason input prompt was improved with a formatted box for better user experience. Initial reasons can now be passed to the 'new' command.
+summary: |-
+  Add 'list' command, enhance the PR reason input prompt, and allow initial reasons to be passed to the 'new' command.
+type: |-
+  feature
