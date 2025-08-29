@@ -1,0 +1,6 @@
+description: |-
+  Added compregensive type hints, added doctions, refactored functions, and added helper functions.
+summary: |-
+  Cleaned codebase for better readability.
+type: |-
+  feature

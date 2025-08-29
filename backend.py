@@ -1,41 +1,42 @@
-"""Requirements:
+"""This module provides backend functionality for auto_detail."""
 
-GitPython
-"""
 import os
-from git import Repo
-import google.genai as genai
-from google.genai import types
 import uuid
 from datetime import date
 from pathlib import Path
+from typing import Any, Dict, List
+
+from colorama import Fore, Style
+from git import Repo
+from google import genai
+from google.genai import types
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as LSS
-from colorama import Fore, Style
 
 DETAIL_ROOT = Path(".detail/notes")
 
+
 def write_note(description: str, summary: str, type_: str) -> Path:
-    """
-    Write a note file in the same style as the notes reader expects.
-    Returns the Path to the created file.
+    """Write a note file in the same style as the notes reader expects.
+
+    Args:
+        description: The detailed description of the pull request.
+        summary: A brief summary of the pull request.
+        type_: The type of the pull request (e.g., "feature", "bug").
+
+    Returns:
+        The path to the created note file.
     """
     DETAIL_ROOT.mkdir(parents=True, exist_ok=True)
 
-    # Unique filename like 2022-03-21-67c3d1.yaml
     today = date.today().strftime("%Y-%m-%d")
     suffix = uuid.uuid4().hex[:6]
     file_path = DETAIL_ROOT / f"{today}-{suffix}.yaml"
 
-    # Use literal block scalars (|) and rely on ruamel.yaml's default chomping
-    desc = LSS(description)
-    summ = LSS(summary)
-    typ  = LSS(type_)
-
     data = {
-        "description": desc,
-        "summary": summ,
-        "type": typ,
+        "description": LSS(description),
+        "summary": LSS(summary),
+        "type": LSS(type_),
     }
 
     yaml = YAML()
@@ -48,17 +49,24 @@ def write_note(description: str, summary: str, type_: str) -> Path:
 
     return file_path
 
-def list_details():
+
+def list_details() -> None:
+    """Prints all the detail files and their contents."""
     for file_path in DETAIL_ROOT.glob("*.yaml"):
         print(Fore.YELLOW + str(file_path) + Style.RESET_ALL)
         with file_path.open("r", encoding="utf-8") as f:
             print(f.read())
-            
-def clear_details():
+
+
+def clear_details() -> List[str]:
+    """Removes all untracked and unstaged detail files.
+
+    Returns:
+        A list of the deleted file paths.
+    """
     repo = Repo(".")
     repo_root = Path(repo.working_tree_dir).resolve()
 
-    # Get untracked and unstaged files (relative to repo root)
     untracked = set(repo.untracked_files)
     unstaged = {item.a_path for item in repo.index.diff(None)}
     dirty_files = untracked | unstaged
@@ -69,7 +77,6 @@ def clear_details():
         try:
             rel_path = str(abs_path.relative_to(repo_root))
         except ValueError:
-            # file not inside repo, skip
             continue
 
         if rel_path in dirty_files:
@@ -81,32 +88,124 @@ def clear_details():
 
     return deleted
 
-def get_diff():
+
+def get_diff() -> str:
+    """Gets the diff of the current repository.
+
+    Returns:
+        The diff of the current repository.
+    """
     repo = Repo(".")
     return repo.git.diff()
 
-def edit_detail(diff, detail, pr_reasons, edit):
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-    tools = [types.Tool(function_declarations=[new_detail_description])]
+def _get_gemini_client() -> genai.Client:
+    """Initializes and returns the Gemini API client.
+
+    Returns:
+        The Gemini API client.
+    """
+    return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+def _get_new_detail_description() -> Dict[str, Any]:
+    """Returns the tool description for the new_detail function.
+
+    Returns:
+        The tool description for the new_detail function.
+    """
+    return {
+        "name": "new_detail",
+        "description": "This tool generates a new PR detail based on the diff of the last commit.",
+        "parameters": {
+            "type": "OBJECT",
+            "properties": {
+                "summary": {
+                    "type": "STRING",
+                    "description": (
+                        "A brief and concise ~1 sentence, <20 words, summary of the PR."
+                        " Avoid repeating words that add no additional meaning."
+                        " The summary should be easy to understand."
+                    )
+                },
+                "type": {
+                    "type": "STRING",
+                    "description": "The type of PR",
+                    "enum": ["feature", "bug", "api", "trivial"],
+                },
+                "description": {
+                    "type": "STRING",
+                    "description": (
+                        "A more detailed but concise description of the PR. "
+                        "Should be under 60 words."
+                    ),
+                },
+            },
+            "required": ["summary", "type", "description"],
+        },
+    }
+
+
+def _generate_content(
+    client: genai.Client, system_instruction: str, content: List[types.Content]
+) -> genai.types.GenerateContentResponse:
+    """Generates content using the Gemini API.
+
+    Args:
+        client: The Gemini API client.
+        system_instruction: The system instruction for the model.
+        content: The content to be sent to the model.
+
+    Returns:
+        The response from the Gemini API.
+    """
+    tools = [types.Tool(function_declarations=[_get_new_detail_description()])]
     config = types.GenerateContentConfig(
-        system_instruction=f"You are a skilled software engineer. Your task is to effectively and skillfully review the diff of a pull request and edit a given detail.",
+        system_instruction=system_instruction,
         tools=tools,
-        automatic_function_calling=types.AutomaticFunctionCallingConfig(
-            disable=True
-        ),
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
         tool_config=types.ToolConfig(
-            function_calling_config=types.FunctionCallingConfig(mode='ANY')
+            function_calling_config=types.FunctionCallingConfig(mode="ANY")
         ),
     )
 
-    contents = [types.Content(role="user", parts=[types.Part(text=f"Oridinal detail: {detail}. Reasons for pr: {pr_reasons}. User edit request: {edit} Diff: {diff}")])]
-
-    response = client.models.generate_content(
+    return client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=contents,
+        contents=content,
         config=config,
     )
+
+
+def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> Dict[str, str]:
+    """Edits a pull request detail using the Gemini API.
+
+    Args:
+        diff: The diff of the pull request.
+        detail: The original detail of the pull request.
+        pr_reasons: The reasons for the pull request.
+        edit: The user's edit request.
+
+    Returns:
+        A dictionary containing the edited summary, type, and description.
+    """
+    client = _get_gemini_client()
+    system_instruction = (
+        "You are a skilled software engineer. Your task is to effectively and skillfully "
+        "review the diff of a pull request and edit a given detail."
+    )
+    contents = [
+        types.Content(
+            role="user",
+            parts=[
+                types.Part(
+                    text=f"Oridinal detail: {detail}. Reasons for pr: {pr_reasons}. "
+                    f"User edit request: {edit} Diff: {diff}"
+                )
+            ],
+        )
+    ]
+
+    response = _generate_content(client, system_instruction, contents)
 
     for fn in response.function_calls:
         if fn.name == "new_detail":
@@ -116,32 +215,30 @@ def edit_detail(diff, detail, pr_reasons, edit):
             if pr_type == "trivial":
                 description = ""
             return {"summary": summary, "type": pr_type, "description": description}
-    
-def generate_pr_details(diff, pr_reasons):
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    return {}
 
-    tools = [types.Tool(function_declarations=[new_detail_description])]
-    config = types.GenerateContentConfig(
-        system_instruction=f"You are a skilled software engineer. Your task is to effectively and skillfully review the diff of a pull request and generate new PR detail(s). Reasons for pr: {pr_reasons}",
-        tools=tools,
-        automatic_function_calling=types.AutomaticFunctionCallingConfig(
-            disable=True
-        ),
-        tool_config=types.ToolConfig(
-            function_calling_config=types.FunctionCallingConfig(mode='ANY')
-        ),
+
+def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
+    """Generates pull request details using the Gemini API.
+
+    Args:
+        diff: The diff of the pull request.
+        pr_reasons: The reasons for the pull request.
+
+    Returns:
+        A list of dictionaries, each containing the summary, type, and description of a detail.
+    """
+    client = _get_gemini_client()
+    system_instruction = (
+        "You are a skilled software engineer. Your task is to effectively and skillfully "
+        "review the diff of a pull request and generate new PR detail(s) in simple language. "
+        f"Reasons for pr: {pr_reasons}"
     )
-
     contents = [types.Content(role="user", parts=[types.Part(text=diff)])]
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=contents,
-        config=config,
-    )
+    response = _generate_content(client, system_instruction, contents)
 
     details = []
-
     for fn in response.function_calls:
         if fn.name == "new_detail":
             summary = fn.args["summary"]
@@ -149,31 +246,8 @@ def generate_pr_details(diff, pr_reasons):
             description = fn.args["description"]
             if pr_type == "trivial":
                 description = ""
-            details.append({"summary": summary, "type": pr_type, "description": description})
+            details.append(
+                {"summary": summary, "type": pr_type, "description": description}
+            )
 
     return details
-
-new_detail_description = {
-    "name": "new_detail",
-    "description": """This tool generates a new PR detail based on the diff of the last commit. Be minimal with the amount of details that you add. Details are used to quickly summarize what and why the PR was made.
-    """,
-    "parameters": {
-        "type": "OBJECT",
-        "properties": {
-            "summary": {
-                "type": "STRING",
-                "description": "A brief ~1 sentence summary of the PR.",
-            },
-            "type": {
-                "type": "STRING",
-                "description": "The type of PR",
-                "enum": ["feature", "bug", "api", "trivial"],
-            },
-            "description": {
-                "type": "STRING",
-                "description": "A more detailed description of the PR. Should be under 60 words. You may leave as an empty string if the type is trivial.",
-            },
-        },
-        "required": ["summary", "type", "description"],
-    },
-}
