@@ -1,0 +1,6 @@
+description: |-
+  This PR integrates Google's Generative AI to automate the creation of pull request details. It provides CLI commands to generate details from a git diff, review them, and optionally edit them with AI or manually before writing them to structured note files. New backend functions handle Git interactions, AI model calls, and detail file management.
+summary: |-
+  Implemented AI-powered PR detail generation and management.
+type: |-
+  feature
