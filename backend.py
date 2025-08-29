@@ -37,7 +37,7 @@ def write_note(description: str, summary: str, type_: str) -> Path:
     data = {
         "summary": LSS(summary),
         "type": LSS(type_),
-        "description": LSS(description)
+        "description": LSS(description),
     }
 
     if description == "":
@@ -54,7 +54,7 @@ def write_note(description: str, summary: str, type_: str) -> Path:
     return file_path
 
 
-def list_details() -> None:
+def list_details():
     """Prints all the detail files and their contents."""
     for file_path in DETAIL_ROOT.glob("*.yaml"):
         print(Fore.YELLOW + str(file_path) + Style.RESET_ALL)
@@ -124,10 +124,9 @@ def get_diff() -> str:
                 f"diff --git a/{f} b/{f}\n"
                 f"new file mode 100644\n"
                 f"--- /dev/null\n"
-                f"+++ b/{f}\n"
-                + "\n".join(f"+{line}" for line in content.splitlines())
+                f"+++ b/{f}\n" + "\n".join(f"+{line}" for line in content.splitlines())
             )
-        except Exception as e:
+        except FileNotFoundError as e:
             diffs.append(
                 f"diff --git a/{f} b/{f}\n"
                 f"new file mode 100644\n"
@@ -179,6 +178,7 @@ def _get_new_detail_description() -> Dict[str, Any]:
         },
     }
 
+
 def _generate_content(
     client: genai.Client, system_instruction: str, content: List[types.Content]
 ) -> genai.types.GenerateContentResponse:
@@ -193,7 +193,7 @@ def _generate_content(
         The response from the Gemini API.
     """
     tools = [types.Tool(function_declarations=[_get_new_detail_description()])]
-    config = types.GenerateContentConfig(
+    model_config = types.GenerateContentConfig(
         system_instruction=system_instruction,
         tools=tools,
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
@@ -205,7 +205,7 @@ def _generate_content(
     return client.models.generate_content(
         model="gemini-2.5-flash",
         contents=content,
-        config=config,
+        config=model_config,
     )
 
 

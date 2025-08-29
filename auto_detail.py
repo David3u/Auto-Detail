@@ -8,30 +8,30 @@ from colorama import Fore, Style, init
 from InquirerPy import inquirer
 
 import backend
-import config 
+import config
 
 
 @click.command()
 def set_key():
     """Store an API key in the config file."""
     key = click.prompt("Enter your Google Gemini API key", hide_input=True).strip()
-    config.set_api_key(key)  
+    config.set_api_key(key)
 
 
 @click.command()
 @click.option("--reasons", help="Reasons for the PR.", default="")
-def new(reasons: str) -> None:
+def new(reasons: str):
     """Generates new pull request details."""
     main(reasons)
 
 
 @click.command()
-def list() -> None:
+def list_details():
     """Lists all the detail files and their contents."""
     backend.list_details()
 
 
-def _pretty_box() -> None:
+def _pretty_box():
     """Prints a pretty box with instructions for the user."""
     lines = [
         "Enter a reason for this PR",
@@ -84,7 +84,7 @@ def _get_pr_reasons(initial_reasons: str) -> List[str]:
     return pr_reasons
 
 
-def _confirm_clear_details() -> None:
+def _confirm_clear_details():
     """Confirms with the user if they want to clear uncommitted details."""
     if inquirer.confirm(
         message="Clear currently uncommited details?", default=True
@@ -93,7 +93,7 @@ def _confirm_clear_details() -> None:
         backend.clear_details()
 
 
-def _review_details(details: List[dict], diff: str, pr_reasons: List[str]) -> None:
+def _review_details(details: List[dict], diff: str, pr_reasons: List[str]):
     """Handles the review process of the generated details.
 
     Args:
@@ -146,7 +146,8 @@ def _review_details(details: List[dict], diff: str, pr_reasons: List[str]) -> No
                     choices=["feature", "bug", "api", "trivial"],
                     default=detail["type"],
                 ).execute()
-                detail["description"] = input("Enter a new description: ")
+                if detail["type"] != "trivial":
+                    detail["description"] = input("Enter a new description: ")
             elif action == "Restart":
                 main()
                 return
@@ -156,7 +157,7 @@ def _review_details(details: List[dict], diff: str, pr_reasons: List[str]) -> No
         count += 1
 
 
-def main(reasons: str = "") -> None:
+def main(reasons: str = ""):
     """The main function for the auto_detail CLI."""
     init(autoreset=True)
 

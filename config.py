@@ -1,8 +1,11 @@
+"""This module manages setting and getting the API key."""
+
 import os
-import click
-import tomllib
-import tomli_w
 from pathlib import Path
+import tomllib
+
+import click
+import tomli_w
 
 APP_NAME = "auto_detail"
 CONFIG_DIR = Path.home() / ".config" / APP_NAME
@@ -25,8 +28,7 @@ def get_api_key(cli_key: str | None = None) -> str:
                 return config["api_key"]
 
     key = click.prompt(
-        "No API key found. Please set your Google Gemini API key", 
-        hide_input=True
+        "No API key found. Please set your Google Gemini API key", hide_input=True
     ).strip()
     set_api_key(key)
     return key
