@@ -34,10 +34,13 @@ def write_note(description: str, summary: str, type_: str) -> Path:
     file_path = DETAIL_ROOT / f"{today}-{suffix}.yaml"
 
     data = {
-        "description": LSS(description),
         "summary": LSS(summary),
         "type": LSS(type_),
+        "description": LSS(description)
     }
+
+    if description == "":
+        del data["description"]
 
     yaml = YAML()
     yaml.indent(mapping=2, sequence=2, offset=2)

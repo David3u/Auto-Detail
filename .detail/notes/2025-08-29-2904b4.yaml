@@ -1,0 +1,6 @@
+summary: |-
+  Bug fix: omit empty description in YAML note
+type: |-
+  bug
+description: |2-
+   Removes the description field from YAML output when it is empty or the type is trivial
