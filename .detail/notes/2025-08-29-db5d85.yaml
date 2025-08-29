@@ -1,0 +1,6 @@
+description: |-
+  The get_diff function now correctly includes untracked new files and deleted files. Comprehensive unit tests have been added for the auto_detail CLI.
+summary: |-
+  Enhance get_diff to include new and deleted files, and add unit tests.
+type: |-
+  feature

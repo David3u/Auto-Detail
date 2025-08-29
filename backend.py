@@ -90,13 +90,49 @@ def clear_details() -> List[str]:
 
 
 def get_diff() -> str:
-    """Gets the diff of the current repository.
+    """Gets the diff of the current repository, including new and deleted files.
 
     Returns:
         The diff of the current repository.
     """
     repo = Repo(".")
-    return repo.git.diff()
+    diffs = []
+
+    # Unstaged changes
+    diffs.append(repo.git.diff())
+
+    # Staged changes
+    diffs.append(repo.git.diff("--cached"))
+
+    # Deleted files (unstaged or staged)
+    deleted_unstaged = repo.git.diff("--diff-filter=D")
+    deleted_staged = repo.git.diff("--cached", "--diff-filter=D")
+    diffs.extend([deleted_unstaged, deleted_staged])
+
+    # New (untracked) files
+    for f in repo.untracked_files:
+        if not os.path.isfile(f):
+            continue  # skip dirs, broken symlinks, etc.
+        try:
+            with open(f, "r", encoding="utf-8") as fh:
+                content = fh.read()
+            diffs.append(
+                f"diff --git a/{f} b/{f}\n"
+                f"new file mode 100644\n"
+                f"--- /dev/null\n"
+                f"+++ b/{f}\n"
+                + "\n".join(f"+{line}" for line in content.splitlines())
+            )
+        except Exception as e:
+            diffs.append(
+                f"diff --git a/{f} b/{f}\n"
+                f"new file mode 100644\n"
+                f"--- /dev/null\n"
+                f"+++ b/{f}\n"
+                f"+[Could not read file: {e}]"
+            )
+
+    return "\n".join(d.strip() for d in diffs if d.strip())
 
 
 def _get_gemini_client() -> genai.Client:
