@@ -209,5 +209,5 @@ def test_list_command_calls_backend_list_details(monkeypatch, load_auto_detail):
     mod = load_auto_detail
     called = {"listed": False}
     mod.backend.list_details = lambda: called.__setitem__("listed", True)
-    mod.list()
+    mod.list_details()
     assert called["listed"] is True

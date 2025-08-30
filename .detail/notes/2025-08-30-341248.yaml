@@ -1,0 +1,6 @@
+summary: |-
+  Fix pytest configuration for `src` directory layout.
+type: |-
+  bug
+description: |-
+  Modified `src/tests/conftest.py` to correctly load modules from the new `src` package structure, ensuring pytest compatibility after project refactoring.

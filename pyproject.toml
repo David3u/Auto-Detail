@@ -1,24 +1,23 @@
-[project]
-name = "auto_detail"
+[tool.poetry]
+name = "auto-detail"
 version = "0.2.0"
 description = "This tool automatically generates pr details via an LLM"
-authors = [
-    {name = "David Wu",email = "3udavid@gmail.com"}
-]
+authors = ["David Wu <3udavid@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
-dependencies = [
-    "click (>=8.2.1,<9.0.0)",
-    "gitpython (>=3.1.45,<4.0.0)",
-    "pyyaml (>=6.0.2,<7.0.0)",
-    "inquirerpy (>=0.3.4,<0.4.0)",
-    "google-genai (>=1.32.0,<2.0.0)",
-    "tomli-w (>=1.2.0,<2.0.0)"
-]
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+click = ">=8.2.1,<9.0.0"
+gitpython = ">=3.1.45,<4.0.0"
+pyyaml = ">=6.0.2,<7.0.0"
+inquirerpy = ">=0.3.4,<0.4.0"
+google-genai = ">=1.32.0,<2.0.0"
+tomli-w = ">=1.2.0,<2.0.0"
+
+[tool.poetry.scripts]
+auto_detail = "src.cli:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-auto_detail = "auto_detail.cli:main"

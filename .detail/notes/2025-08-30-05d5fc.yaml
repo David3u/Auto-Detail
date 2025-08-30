@@ -1,0 +1,6 @@
+summary: |-
+  Refactor project to use `src` layout and update build configuration.
+type: |-
+  feature
+description: |-
+  Moved all source code, CLI, backend, and configuration modules into a new `src/` directory. Updated `pyproject.toml` to reflect this `src` layout, adjusted the package name, and updated the script entry point.

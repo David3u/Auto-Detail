@@ -84,17 +84,41 @@ def _ensure_stub_modules():
         backend.edit_detail = lambda diff, detail, pr_reasons, edit: detail
         sys.modules["backend"] = backend
 
+    # config
+    if "config" not in sys.modules:
+        config = types.ModuleType("config")
+        config.set_api_key = lambda key: None
+        sys.modules["config"] = config
+
+    # src module (to support "from src import backend/config")
+    if "src" not in sys.modules:
+        src = types.ModuleType("src")
+        src.backend = sys.modules["backend"]
+        src.config = sys.modules["config"]
+        sys.modules["src"] = src
+
 
 def load_auto_detail_module():
     """Load auto_detail/auto_detail.py as a fresh module instance with stubs in place."""
     _ensure_stub_modules()
-    module_name = f"auto_detail_under_test_{uuid.uuid4().hex}"
-    auto_detail_path = Path(__file__).resolve().parents[1] / "auto_detail.py"
-    spec = importlib.util.spec_from_file_location(module_name, str(auto_detail_path))
-    mod = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(mod)
-    return mod
+    project_root = str(Path(__file__).resolve().parents[1])
+    sys.path.insert(0, project_root)
+    try:
+        module_name = f"auto_detail_under_test_{uuid.uuid4().hex}"
+        auto_detail_path = Path(project_root) / "auto_detail.py"
+        spec = importlib.util.spec_from_file_location(module_name, str(auto_detail_path))
+        mod = importlib.util.module_from_spec(spec)
+        assert spec and spec.loader
+
+        # Add the backend and config modules to the module's namespace before execution
+        mod.backend = sys.modules["backend"]
+        mod.config = sys.modules.get("config", types.ModuleType("config"))
+
+        spec.loader.exec_module(mod)
+        return mod
+    finally:
+        if sys.path[0] == project_root:
+            sys.path.pop(0)
 
 
 @pytest.fixture

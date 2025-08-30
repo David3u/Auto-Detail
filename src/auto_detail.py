@@ -7,8 +7,8 @@ import click
 from colorama import Fore, Style, init
 from InquirerPy import inquirer
 
-from auto_detail import backend
-from auto_detail import config
+from src import backend
+from src import config
 
 
 @click.command()

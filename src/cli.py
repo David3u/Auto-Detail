@@ -1,7 +1,7 @@
 """This module provides the CLI for auto_detail."""
 
 import click
-from auto_detail import auto_detail
+from src import auto_detail
 
 
 @click.group(invoke_without_command=True)
