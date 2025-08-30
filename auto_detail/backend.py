@@ -12,7 +12,7 @@ from google import genai
 from google.genai import types
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as LSS
-import config
+from auto_detail import config
 
 DETAIL_ROOT = Path(".detail/notes")
 
@@ -127,6 +127,14 @@ def get_diff() -> str:
                 f"+++ b/{f}\n" + "\n".join(f"+{line}" for line in content.splitlines())
             )
         except FileNotFoundError as e:
+            diffs.append(
+                f"diff --git a/{f} b/{f}\n"
+                f"new file mode 100644\n"
+                f"--- /dev/null\n"
+                f"+++ b/{f}\n"
+                f"+[Could not read file: {e}]"
+            )
+        except Exception as e:
             diffs.append(
                 f"diff --git a/{f} b/{f}\n"
                 f"new file mode 100644\n"
@@ -266,6 +274,7 @@ def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
         "You are a senior software engineer. Review the pull request diff and "
         "write a clear and concise description of the changes. "
         "Generate a new PR detail in simple language. "
+        "You may generate multiple details if necessary. "
         f"\n\n Reasons for pr: {pr_reasons}"
     )
     contents = [types.Content(role="user", parts=[types.Part(text=diff)])]

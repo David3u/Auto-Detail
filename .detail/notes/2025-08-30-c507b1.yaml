@@ -1,0 +1,6 @@
+summary: |-
+  Refactored project into a proper Python package structure.
+type: |-
+  feature
+description: |-
+  Moved all core application files into an 'auto_detail' directory and updated internal imports for better modularity and standard Python packaging.

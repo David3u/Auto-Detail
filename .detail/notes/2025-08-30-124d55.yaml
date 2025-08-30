@@ -1,0 +1,6 @@
+summary: |-
+  Enabled AI to generate multiple pull request details.
+type: |-
+  feature
+description: |-
+  Modified the AI system instruction to allow the model to generate multiple PR details when reviewing the diff, improving output flexibility.
