@@ -294,3 +294,16 @@ def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
             )
 
     return details
+
+def test_repo() -> bool:
+    """Tests the current folder to see if there is a git repo.
+    
+    Returns:
+        True if there exists a git repo and false if not.
+    """
+
+    try:
+        repo = Repo(".")
+        return True 
+    except:
+        return False

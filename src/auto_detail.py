@@ -161,6 +161,11 @@ def main(reasons: str = ""):
     """The main function for the auto_detail CLI."""
     init(autoreset=True)
 
+    if not backend.test_repo():
+        print(Fore.RED + "No git repository found at current location.")
+        print(Style.RESET_ALL, end="")
+        return
+
     pr_reasons = _get_pr_reasons(reasons)
     _confirm_clear_details()
 

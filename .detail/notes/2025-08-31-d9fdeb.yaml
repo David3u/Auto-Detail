@@ -1,0 +1,6 @@
+summary: |-
+  Add check for a Git repository before running.
+type: |-
+  feature
+description: |-
+  Prevents errors by verifying a Git repository exists in the current directory, providing a clear error message if not found.
