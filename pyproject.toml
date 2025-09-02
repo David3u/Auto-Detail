@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "auto-detail"
-version = "0.2.0"
+version = "0.3.0"
 description = "This tool automatically generates pr details via an LLM"
 authors = ["David Wu <3udavid@gmail.com>"]
 readme = "README.md"
 packages = [{include = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.12,<4.0"
+python = ">=3.9,<4.0"
 click = ">=8.2.1,<9.0.0"
 gitpython = ">=3.1.45,<4.0.0"
 pyyaml = ">=6.0.2,<7.0.0"

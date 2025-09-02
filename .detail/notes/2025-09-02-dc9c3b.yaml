@@ -1,0 +1,6 @@
+summary: |-
+  Lower Python version requirement to 3.9
+type: |-
+  feature
+description: |-
+  Updated `pyproject.toml` to support Python 3.9, expanding compatibility for users.
