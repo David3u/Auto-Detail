@@ -21,3 +21,74 @@ auto-detail = "src.cli:main"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+# Development dependencies that are at least pip installable.
+# If dependencies are only pip installable, set
+# them as {version = "<version number>", source = "pypi"}
+[tool.group.poetry.dev-dependencies]
+black = "25.1.0"
+flake8 = "6.0.0"
+flake8-bugbear = "22.12.6"
+flake8-comprehensions = "3.10.1"
+flake8-mutable = "1.2.0"
+isort = "5.12.0"
+myst-parser = "4.0.1"
+poetry = ">=1.4.0"
+pre-commit = ">=3.0.0"
+pytest = "7.2.0"
+pytest-asyncio = ">=0.23.5"
+pytest-cov = "4.0.0"
+pytest-mock = "3.10.0"
+pytest-timeout = "*"
+pytest-xdist = "3.1.0"
+Sphinx = "8.2.3"
+sphinx-copybutton = ">=0.5.0"
+sphinx-rtd-theme = "3.0.1"
+autodoc_pydantic = ">=2.0.0"
+
+[tool.bandit]
+# exclude_dirs = ["tests", "path/to/file"]
+# tests = ["B201", "B301"]
+skips = ["B301", "B314", "B602"]
+
+# Black formatting parameters
+[tool.black]
+line-length = 88
+extend_exclude = '''
+/(
+  | _conda_envs_.*
+)/
+'''
+
+# Coverage settings
+[tool.coverage.run]
+branch = true
+source = ["auto_detail"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "pass",
+    "pytest.mark.skip",
+]
+show_missing = true
+fail_under = 100
+
+# Isort settings
+[tool.isort]
+profile = "black"
+line_length = 88
+lines_between_types = 1
+extend_skip_glob = []
+
+# Pytest options
+[tool.pytest.ini_options]
+markers = [
+    "systest: system tests are typically slow and resource hogging.",
+    "slow: slow tests",
+]
+testpaths = ["auto_detail"]
+timeout = 300
+xfail_strict = true
