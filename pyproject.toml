@@ -4,7 +4,7 @@ version = "0.4.0"
 description = "This tool automatically generates PR details via an AI."
 authors = ["David Wu <3udavid@gmail.com>"]
 readme = "README.md"
-packages = [{include = "src"}]
+packages = [{include = "auto_detail"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
