@@ -4,7 +4,6 @@ import os
 import uuid
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List
 
 from colorama import Fore, Style
 from git import Repo
@@ -62,7 +61,7 @@ def list_details():
             print(f.read())
 
 
-def clear_details() -> List[str]:
+def clear_details() -> list[str]:
     """Removes all untracked and unstaged detail files.
 
     Returns:
@@ -178,7 +177,7 @@ def _get_gemini_client() -> genai.Client:
     return genai.Client(api_key=config.get_api_key())
 
 
-def _get_new_detail_description() -> Dict[str, Any]:
+def _get_new_detail_description() -> dict[str, Any]:
     """Returns the tool description for the new_detail function."""
     return {
         "name": "new_detail",
@@ -211,7 +210,7 @@ def _get_new_detail_description() -> Dict[str, Any]:
 
 
 def _generate_content(
-    client: genai.Client, system_instruction: str, content: List[types.Content]
+    client: genai.Client, system_instruction: str, content: list[types.Content]
 ) -> genai.types.GenerateContentResponse:
     """Generates content using the Gemini API.
 
@@ -240,7 +239,7 @@ def _generate_content(
     )
 
 
-def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> Dict[str, str]:
+def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> dict[str, str]:
     """Edits a pull request detail using the Gemini API.
 
     Args:
@@ -282,7 +281,7 @@ def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> Dict[str,
     return {}
 
 
-def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
+def generate_pr_details(diff: str, pr_reasons: str) -> list[dict[str, str]]:
     """Generates pull request details using the Gemini API.
 
     Args:
