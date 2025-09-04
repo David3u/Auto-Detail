@@ -1,6 +1,7 @@
-"""This module provides the CLI for auto_detail."""
+"""CLI of auto_detail."""
 
 import click
+
 from src import auto_detail
 
 

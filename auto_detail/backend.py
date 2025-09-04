@@ -1,9 +1,11 @@
-"""This module provides backend functionality for auto_detail."""
+"""Backend functionality of auto_detail."""
 
 import os
 import uuid
+
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 from colorama import Fore, Style
 from git import Repo
@@ -102,14 +104,15 @@ def get_diff() -> str:
     base_branch = config.get_base_branch()
 
     try:
-        # Try to get diff against the configured base branch
+        # Try to get diff against the configured base branch.
         diff_output = repo.git.diff(base_branch)
         if diff_output.strip():
             return diff_output
-        # If no diff against base branch, fall back to working directory changes
+        # If no diff against base branch, fall back to working directory changes.
         return _get_working_directory_diff(repo)
     except Exception:
-        # If base branch doesn't exist or other error, fall back to working directory changes
+        # If base branch doesn't exist or other error, fall back to working directory
+        # changes
         return _get_working_directory_diff(repo)
 
 
@@ -194,7 +197,8 @@ def _get_new_detail_description() -> dict[str, Any]:
                 },
                 "type": {
                     "type": "STRING",
-                    "description": "The PR category. API is a MAJOR change to the public API.",
+                    "description": "The PR category. API is a MAJOR change to the"
+                    " public API.",
                     "enum": ["feature", "bug", "api", "trivial"],
                 },
                 "description": {
@@ -253,15 +257,15 @@ def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> dict[str,
     """
     client = _get_gemini_client()
     system_instruction = (
-        "You are a skilled software engineer. Your task is to effectively and skillfully "
-        "review the diff of a pull request and edit a given detail."
+        "You are a skilled software engineer. Your task is to effectively and"
+        " skillfully review the diff of a pull request and edit a given detail."
     )
     contents = [
         types.Content(
             role="user",
             parts=[
                 types.Part(
-                    text=f"Oridinal detail: {detail}. Reasons for pr: {pr_reasons}. "
+                    text=f"Original detail: {detail}. Reasons for pr: {pr_reasons}. "
                     f"User edit request: {edit} Diff: {diff}"
                 )
             ],
@@ -289,7 +293,8 @@ def generate_pr_details(diff: str, pr_reasons: str) -> list[dict[str, str]]:
         pr_reasons: The reasons for the pull request.
 
     Returns:
-        A list of dictionaries, each containing the summary, type, and description of a detail.
+        A list of `dict`s, each containing the summary, type, and description of a
+        detail.
     """
     client = _get_gemini_client()
     system_instruction = (
@@ -318,15 +323,14 @@ def generate_pr_details(diff: str, pr_reasons: str) -> list[dict[str, str]]:
     return details
 
 
-def test_repo() -> bool:
+def is_git_repo() -> bool:
     """Tests the current folder to see if there is a git repo.
 
     Returns:
-        True if there exists a git repo and false if not.
+        True if the current directory is within a git repo, and false if not.
     """
-
     try:
         Repo(".")
         return True
-    except:
+    except Exception:
         return False

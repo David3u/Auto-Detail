@@ -1,13 +1,13 @@
-"""This module provides the main CLI for auto_detail."""
+"""Main CLI entry points of auto_detail."""
 
 import sys
 import threading
+
 import click
+
 from colorama import Fore, Style, init
 from InquirerPy import inquirer
-
-from src import backend
-from src import config
+from src import backend, config
 
 
 class BackgroundDetailGenerator:
@@ -81,7 +81,7 @@ def show_config():
     try:
         config.get_api_key()
         print("API key: ✓ Configured")
-    except:
+    except Exception:
         print("API key: ✗ Not configured")
 
 
@@ -94,7 +94,7 @@ def new(reasons: str):
 
 @click.command()
 def list_details():
-    """lists all the detail files and their contents."""
+    """Lists all the detail-note files and their contents."""
     backend.list_details()
 
 
