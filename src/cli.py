@@ -17,3 +17,5 @@ def main(ctx: click.Context, reasons: str):
 main.add_command(auto_detail.new)
 main.add_command(auto_detail.list_details, name="list")
 main.add_command(auto_detail.set_key)
+main.add_command(auto_detail.set_base_branch, name="set-branch")
+main.add_command(auto_detail.show_config, name="config")

@@ -94,12 +94,35 @@ def clear_details() -> List[str]:
 
 
 def get_diff() -> str:
-    """Gets the diff of the current repository, including new and deleted files.
+    """Gets the diff of the current repository against the configured base branch.
 
     Returns:
-        The diff of the current repository.
+        The diff of the current repository against the base branch.
     """
     repo = Repo(".")
+    base_branch = config.get_base_branch()
+
+    try:
+        # Try to get diff against the configured base branch
+        diff_output = repo.git.diff(base_branch)
+        if diff_output.strip():
+            return diff_output
+        # If no diff against base branch, fall back to working directory changes
+        return _get_working_directory_diff(repo)
+    except Exception:
+        # If base branch doesn't exist or other error, fall back to working directory changes
+        return _get_working_directory_diff(repo)
+
+
+def _get_working_directory_diff(repo) -> str:
+    """Gets the diff of working directory changes (original behavior).
+
+    Args:
+        repo: The git repository object.
+
+    Returns:
+        The diff of the working directory changes.
+    """
     diffs = []
 
     # Unstaged changes
@@ -295,15 +318,16 @@ def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
 
     return details
 
+
 def test_repo() -> bool:
     """Tests the current folder to see if there is a git repo.
-    
+
     Returns:
         True if there exists a git repo and false if not.
     """
 
     try:
-        repo = Repo(".")
-        return True 
+        Repo(".")
+        return True
     except:
         return False

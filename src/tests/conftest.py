@@ -88,6 +88,8 @@ def _ensure_stub_modules():
     if "config" not in sys.modules:
         config = types.ModuleType("config")
         config.set_api_key = lambda key: None
+        config.get_base_branch = lambda: "origin/develop"
+        config.set_base_branch = lambda branch: None
         sys.modules["config"] = config
 
     # src module (to support "from src import backend/config")

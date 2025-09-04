@@ -26,53 +26,7 @@ class BackgroundDetailGenerator:
         """Start generating details in a background thread."""
         self.diff = diff
         self.thread = threading.Thread(
-            target=self._generate_details,
-            args=(diff, pr_reasons),
-            daemon=True
-        )
-        self.thread.start()
-
-    def _generate_details(self, diff: str, pr_reasons: List[str]):
-        """Generate details in the background thread."""
-        try:
-            self.details = backend.generate_pr_details(diff, pr_reasons)
-        except Exception as e:
-            self.error = e
-        finally:
-            self.completed = True
-
-    def get_details(self, timeout: Optional[float] = None) -> Optional[List[dict]]:
-        """Get the generated details, waiting for completion if necessary."""
-        if self.thread and self.thread.is_alive():
-            self.thread.join(timeout=timeout)
-
-        if self.error:
-            raise self.error
-
-        return self.details
-
-    def is_ready(self) -> bool:
-        """Check if details are ready without blocking."""
-        return self.completed
-
-
-class BackgroundDetailGenerator:
-    """Handles background generation of PR details."""
-
-    def __init__(self):
-        self.thread: Optional[threading.Thread] = None
-        self.details: Optional[List[dict]] = None
-        self.diff: Optional[str] = None
-        self.error: Optional[Exception] = None
-        self.completed: bool = False
-
-    def start_generation(self, diff: str, pr_reasons: List[str]):
-        """Start generating details in a background thread."""
-        self.diff = diff
-        self.thread = threading.Thread(
-            target=self._generate_details,
-            args=(diff, pr_reasons),
-            daemon=True
+            target=self._generate_details, args=(diff, pr_reasons), daemon=True
         )
         self.thread.start()
 
@@ -105,6 +59,32 @@ def set_key():
     """Store an API key in the config file."""
     key = click.prompt("Enter your Google Gemini API key", hide_input=True).strip()
     config.set_api_key(key)
+
+
+@click.command()
+@click.option("--branch", help="Base branch to compare against.", default=None)
+def set_base_branch(branch: str):
+    """Set the base branch for diff comparison."""
+    if not branch:
+        current_branch = config.get_base_branch()
+        branch = click.prompt(
+            "Enter base branch for diff comparison. Current: ", default=current_branch
+        ).strip()
+    config.set_base_branch(branch)
+
+
+@click.command()
+def show_config():
+    """Show current configuration."""
+    base_branch = config.get_base_branch()
+    print(f"Base branch: {base_branch}")
+
+    # Try to show if API key is configured (without revealing it)
+    try:
+        config.get_api_key()
+        print("API key: ✓ Configured")
+    except:
+        print("API key: ✗ Not configured")
 
 
 @click.command()
@@ -255,6 +235,10 @@ def main(reasons: str = ""):
         print(Fore.RED + "No git repository found at current location.")
         print(Style.RESET_ALL, end="")
         return
+
+    # Show which base branch we're comparing against
+    base_branch = config.get_base_branch()
+    print(f"Comparing against base branch: {Fore.CYAN}{base_branch}{Style.RESET_ALL}")
 
     diff = backend.get_diff()
 

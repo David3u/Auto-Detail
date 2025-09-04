@@ -1,0 +1,6 @@
+summary: |-
+  Allow configuring a base Git branch for diff comparison and add a config display command.
+type: |-
+  feature
+description: |-
+  Users can now specify a base Git branch to compare against for PR details, improving diff accuracy. A new `config` command shows current settings, including the base branch and API key status.

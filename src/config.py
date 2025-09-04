@@ -37,6 +37,43 @@ def get_api_key(cli_key: str | None = None) -> str:
 def set_api_key(key: str):
     """Save API key to config file."""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Load existing config if it exists
+    config = {}
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, "rb") as f:
+            config = tomllib.load(f)
+
+    # Update with new API key
+    config["api_key"] = key
+
     with open(CONFIG_FILE, "wb") as f:
-        tomli_w.dump({"api_key": key}, f)
+        tomli_w.dump(config, f)
     click.echo(f"✔ API key saved to {CONFIG_FILE}")
+
+
+def get_base_branch() -> str:
+    """Get the base branch for diff comparison from config file."""
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, "rb") as f:
+            config = tomllib.load(f)
+            return config.get("base_branch", "origin/develop")
+    return "origin/develop"
+
+
+def set_base_branch(branch: str):
+    """Save base branch to config file."""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Load existing config if it exists
+    config = {}
+    if CONFIG_FILE.exists():
+        with open(CONFIG_FILE, "rb") as f:
+            config = tomllib.load(f)
+
+    # Update with new base branch
+    config["base_branch"] = branch
+
+    with open(CONFIG_FILE, "wb") as f:
+        tomli_w.dump(config, f)
+    click.echo(f"✔ Base branch set to {branch} and saved to {CONFIG_FILE}")
