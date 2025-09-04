@@ -1,7 +1,8 @@
 """This module provides the main CLI for auto_detail."""
 
 import sys
-from typing import List
+import threading
+from typing import List, Optional
 
 import click
 from colorama import Fore, Style, init
@@ -9,6 +10,94 @@ from InquirerPy import inquirer
 
 from src import backend
 from src import config
+
+
+class BackgroundDetailGenerator:
+    """Handles background generation of PR details."""
+
+    def __init__(self):
+        self.thread: Optional[threading.Thread] = None
+        self.details: Optional[List[dict]] = None
+        self.diff: Optional[str] = None
+        self.error: Optional[Exception] = None
+        self.completed: bool = False
+
+    def start_generation(self, diff: str, pr_reasons: List[str]):
+        """Start generating details in a background thread."""
+        self.diff = diff
+        self.thread = threading.Thread(
+            target=self._generate_details,
+            args=(diff, pr_reasons),
+            daemon=True
+        )
+        self.thread.start()
+
+    def _generate_details(self, diff: str, pr_reasons: List[str]):
+        """Generate details in the background thread."""
+        try:
+            self.details = backend.generate_pr_details(diff, pr_reasons)
+        except Exception as e:
+            self.error = e
+        finally:
+            self.completed = True
+
+    def get_details(self, timeout: Optional[float] = None) -> Optional[List[dict]]:
+        """Get the generated details, waiting for completion if necessary."""
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=timeout)
+
+        if self.error:
+            raise self.error
+
+        return self.details
+
+    def is_ready(self) -> bool:
+        """Check if details are ready without blocking."""
+        return self.completed
+
+
+class BackgroundDetailGenerator:
+    """Handles background generation of PR details."""
+
+    def __init__(self):
+        self.thread: Optional[threading.Thread] = None
+        self.details: Optional[List[dict]] = None
+        self.diff: Optional[str] = None
+        self.error: Optional[Exception] = None
+        self.completed: bool = False
+
+    def start_generation(self, diff: str, pr_reasons: List[str]):
+        """Start generating details in a background thread."""
+        self.diff = diff
+        self.thread = threading.Thread(
+            target=self._generate_details,
+            args=(diff, pr_reasons),
+            daemon=True
+        )
+        self.thread.start()
+
+    def _generate_details(self, diff: str, pr_reasons: List[str]):
+        """Generate details in the background thread."""
+        try:
+            self.details = backend.generate_pr_details(diff, pr_reasons)
+        except Exception as e:
+            self.error = e
+        finally:
+            self.completed = True
+
+    def get_details(self, timeout: Optional[float] = None) -> Optional[List[dict]]:
+        """Get the generated details, waiting for completion if necessary."""
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=timeout)
+
+        if self.error:
+            raise self.error
+
+        return self.details
+
+    def is_ready(self) -> bool:
+        """Check if details are ready without blocking."""
+        return self.completed
 
 
 @click.command()
@@ -36,6 +125,7 @@ def _pretty_box():
     lines = [
         "Enter a reason for this PR",
         "Use #<issue_num> to reference the issue",
+        "(Leave all blank to use pregenerated details)",
         "(Leave blank to finish)",
     ]
 
@@ -166,12 +256,31 @@ def main(reasons: str = ""):
         print(Style.RESET_ALL, end="")
         return
 
+    diff = backend.get_diff()
+
+    # start background generation with empty reasons
+    bg_generator = BackgroundDetailGenerator()
+    bg_generator.start_generation(diff, [""])
+
     pr_reasons = _get_pr_reasons(reasons)
     _confirm_clear_details()
 
     print("Generating PR details...")
 
-    diff = backend.get_diff()
-    details = backend.generate_pr_details(diff, pr_reasons)
+    # use pregenerated if all reasons are empty/blank
+    all_reasons_empty = all(not reason.strip() for reason in pr_reasons)
 
-    _review_details(details, diff, pr_reasons)
+    if all_reasons_empty:
+        if bg_generator.is_ready():
+            details = bg_generator.get_details()
+        else:
+            details = bg_generator.get_details(timeout=30)  # 30 second timeout
+    else:
+        filtered_reasons = [reason.strip() for reason in pr_reasons if reason.strip()]
+        details = backend.generate_pr_details(diff, filtered_reasons)
+
+    if details:
+        _review_details(details, diff, pr_reasons)
+    else:
+        print(Fore.RED + "Failed to generate PR details.")
+        print(Style.RESET_ALL, end="")

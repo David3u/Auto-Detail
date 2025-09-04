@@ -1,0 +1,6 @@
+summary: |-
+  Implement background PR detail generation to improve user experience.
+type: |-
+  feature
+description: |-
+  Introduces asynchronous generation of PR details, enabling users to input reasons while initial details are processed, thereby reducing perceived wait times.
