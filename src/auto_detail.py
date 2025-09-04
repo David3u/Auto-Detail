@@ -35,7 +35,7 @@ def _pretty_box():
     """Prints a pretty box with instructions for the user."""
     lines = [
         "Enter a reason for this PR",
-        "Use #issue_num to reference issues",
+        "Use #<issue_num> to reference the issue",
         "(Leave blank to finish)",
     ]
 
@@ -87,7 +87,7 @@ def _get_pr_reasons(initial_reasons: str) -> List[str]:
 def _confirm_clear_details():
     """Confirms with the user if they want to clear uncommitted details."""
     if inquirer.confirm(
-        message="Clear currently uncommited details?", default=True
+        message="Clear currently uncommitted details?", default=True
     ).execute():
         print("Clearing details...")
         backend.clear_details()
@@ -119,7 +119,7 @@ def _review_details(details: List[dict], diff: str, pr_reasons: List[str]):
                 message="Approve or edit this detail.",
                 choices=[
                     "Approve",
-                    "Edit detail with ai",
+                    "Edit detail with AI",
                     "Edit detail manually",
                     "Restart",
                     "Quit",
@@ -136,8 +136,8 @@ def _review_details(details: List[dict], diff: str, pr_reasons: List[str]):
                     f"{file_path} {Style.RESET_ALL}"
                 )
                 break
-            if action == "Edit detail with ai":
-                edit = input("What should the llm change? ")
+            if action == "Edit detail with AI":
+                edit = input("What should the AI change? ")
                 detail = backend.edit_detail(diff, detail, pr_reasons, edit)
             elif action == "Edit detail manually":
                 detail["summary"] = input("Enter a new summary: ")

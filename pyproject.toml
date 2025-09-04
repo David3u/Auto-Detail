@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "auto-detail"
 version = "0.3.0"
-description = "This tool automatically generates pr details via an LLM"
+description = "This tool automatically generates PR details via an AI."
 authors = ["David Wu <3udavid@gmail.com>"]
 readme = "README.md"
 packages = [{include = "src"}]
@@ -16,7 +16,7 @@ google-genai = ">=1.32.0,<2.0.0"
 tomli-w = ">=1.2.0,<2.0.0"
 
 [tool.poetry.scripts]
-auto_detail = "src.cli:main"
+auto-detail = "src.cli:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
