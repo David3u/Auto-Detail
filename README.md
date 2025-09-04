@@ -45,3 +45,9 @@ To see a list of all recorded details:
 ```bash
 auto-detail list
 ```
+
+## Dev Env Setup
+```bash
+poetry install
+pre-commit install
+```
