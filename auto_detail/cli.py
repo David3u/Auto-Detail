@@ -2,7 +2,7 @@
 
 import click
 
-from src import auto_detail
+from auto_detail import auto_detail_main
 
 
 @click.group(invoke_without_command=True)
@@ -12,11 +12,11 @@ from src import auto_detail
 def main(ctx: click.Context, reasons: str):
     """A CLI tool to automatically generate pull request details."""
     if ctx.invoked_subcommand is None:
-        auto_detail.main(reasons)
+        auto_detail_main.main(reasons)
 
 
-main.add_command(auto_detail.new)
-main.add_command(auto_detail.list_details, name="list")
-main.add_command(auto_detail.set_key)
-main.add_command(auto_detail.set_base_branch, name="set-branch")
-main.add_command(auto_detail.show_config, name="config")
+main.add_command(auto_detail_main.new)
+main.add_command(auto_detail_main.list_details, name="list")
+main.add_command(auto_detail_main.set_key)
+main.add_command(auto_detail_main.set_base_branch, name="set-branch")
+main.add_command(auto_detail_main.show_config, name="config")

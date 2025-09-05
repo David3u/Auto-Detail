@@ -7,7 +7,7 @@ import click
 
 from colorama import Fore, Style, init
 from InquirerPy import inquirer
-from src import backend, config
+from auto_detail import backend, config
 
 
 class BackgroundDetailGenerator:
@@ -103,7 +103,6 @@ def _pretty_box():
     lines = [
         "Enter a reason for this PR",
         "Use #<issue_num> to reference the issue",
-        "(Leave all blank to use pregenerated details)",
         "(Leave blank to finish)",
     ]
 
@@ -229,7 +228,7 @@ def main(reasons: str = ""):
     """The main function for the auto_detail CLI."""
     init(autoreset=True)
 
-    if not backend.test_repo():
+    if not backend.is_git_repo():
         print(Fore.RED + "No git repository found at current location.")
         print(Style.RESET_ALL, end="")
         return

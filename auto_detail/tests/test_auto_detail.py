@@ -38,7 +38,7 @@ def test_pretty_box_prints_basic_structure(capsys, load_auto_detail):
     mod._pretty_box()
     out = capsys.readouterr().out
     assert "Enter a reason for this PR" in out
-    assert "Use #issue_num to reference issues" in out
+    assert "Use #<issue_num> to reference the issue" in out
     assert "(Leave blank to finish)" in out
     assert "╭" in out and "╯" in out
 

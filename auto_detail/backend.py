@@ -13,7 +13,7 @@ from google import genai
 from google.genai import types
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as LSS
-from src import config
+from auto_detail import config
 
 DETAIL_ROOT = Path(".detail/notes")
 

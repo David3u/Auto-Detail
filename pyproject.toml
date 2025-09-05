@@ -16,7 +16,7 @@ google-genai = ">=1.32.0,<2.0.0"
 tomli-w = ">=1.2.0,<2.0.0"
 
 [tool.poetry.scripts]
-auto-detail = "src.cli:main"
+auto-detail = "auto_detail.cli:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
