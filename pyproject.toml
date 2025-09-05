@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "auto-detail"
-version = "0.4.0"
+version = "0.5.0"
 description = "This tool automatically generates PR details via an AI."
 authors = ["David Wu <3udavid@gmail.com>"]
 readme = "README.md"
