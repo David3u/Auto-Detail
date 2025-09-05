@@ -300,8 +300,9 @@ def generate_pr_details(diff: str, pr_reasons: str) -> list[dict[str, str]]:
     system_instruction = (
         "You are a senior software engineer. Review the pull request diff and "
         "write a clear and concise description of the changes. "
-        "Generate a new PR detail in simple language. "
-        "You may generate multiple details if necessary. "
+        "Generate a new PR detail(s) in simple language. "
+        "You may generate multiple details if it improves clarity. (i.e multiple "
+        "different feature added and bugs fixed)"
         f"\n\n Reasons for pr: {pr_reasons}"
     )
     contents = [types.Content(role="user", parts=[types.Part(text=diff)])]
