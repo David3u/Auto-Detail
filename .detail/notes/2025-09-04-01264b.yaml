@@ -1,0 +1,6 @@
+summary: |-
+  Integrated pre-commit hooks and configured code quality tools.
+type: |-
+  feature
+description: |-
+  Added `.pre-commit-config.yaml` and `setup.cfg` to enforce consistent code style with Black, check for issues with Flake8 and Bandit, and manage imports with Isort.

@@ -45,6 +45,8 @@ def _ensure_stub_modules():
             GREEN = ""
             WHITE = ""
             YELLOW = ""
+            RED = ""
+            CYAN = ""
 
         class Style:  # pylint: disable=too-few-public-methods
             """Stub style constants."""
@@ -82,6 +84,7 @@ def _ensure_stub_modules():
         backend.generate_pr_details = lambda diff, reasons: []
         backend.write_note = lambda description, summary, type_: "notes/file.yaml"
         backend.edit_detail = lambda diff, detail, pr_reasons, edit: detail
+        backend.is_git_repo = lambda: True
         sys.modules["backend"] = backend
 
     # config
@@ -92,12 +95,12 @@ def _ensure_stub_modules():
         config.set_base_branch = lambda branch: None
         sys.modules["config"] = config
 
-    # src module (to support "from src import backend/config")
-    if "src" not in sys.modules:
-        src = types.ModuleType("src")
-        src.backend = sys.modules["backend"]
-        src.config = sys.modules["config"]
-        sys.modules["src"] = src
+    # auto_detail module (to support "from auto_detail import backend/config")
+    if "auto_detail" not in sys.modules:
+        auto_detail = types.ModuleType("auto_detail")
+        auto_detail.backend = sys.modules["backend"]
+        auto_detail.config = sys.modules["config"]
+        sys.modules["auto_detail"] = auto_detail
 
 
 def load_auto_detail_module():
@@ -107,7 +110,7 @@ def load_auto_detail_module():
     sys.path.insert(0, project_root)
     try:
         module_name = f"auto_detail_under_test_{uuid.uuid4().hex}"
-        auto_detail_path = Path(project_root) / "auto_detail.py"
+        auto_detail_path = Path(project_root) / "auto_detail_main.py"
         spec = importlib.util.spec_from_file_location(module_name, str(auto_detail_path))
         mod = importlib.util.module_from_spec(spec)
         assert spec and spec.loader

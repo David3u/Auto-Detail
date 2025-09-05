@@ -1,0 +1,6 @@
+summary: |-
+  Updated core dependencies, including a major upgrade to google-genai.
+type: |-
+  feature
+description: |-
+  Upgraded `google-genai` to version 1.33.0, along with other package updates. This ensures compatibility and leverages the latest features and bug fixes.

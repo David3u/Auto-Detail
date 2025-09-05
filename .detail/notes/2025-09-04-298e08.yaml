@@ -1,0 +1,6 @@
+summary: |-
+  Refactored project structure for improved organization.
+type: |-
+  feature
+description: |-
+  Moved source code, CLI entry point, and test files into a new `auto_detail` package to enhance modularity and maintainability.
