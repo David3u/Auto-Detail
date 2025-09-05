@@ -1,28 +1,26 @@
-"""This module provides the main CLI for auto_detail."""
+"""Main CLI entry points of auto_detail."""
 
 import sys
 import threading
-from typing import List, Optional
 
 import click
+
 from colorama import Fore, Style, init
 from InquirerPy import inquirer
-
-from src import backend
-from src import config
+from auto_detail import backend, config
 
 
 class BackgroundDetailGenerator:
     """Handles background generation of PR details."""
 
     def __init__(self):
-        self.thread: Optional[threading.Thread] = None
-        self.details: Optional[List[dict]] = None
-        self.diff: Optional[str] = None
-        self.error: Optional[Exception] = None
+        self.thread: threading.Thread | None = None
+        self.details: list[dict] | None = None
+        self.diff: str | None = None
+        self.error: Exception | None = None
         self.completed: bool = False
 
-    def start_generation(self, diff: str, pr_reasons: List[str]):
+    def start_generation(self, diff: str, pr_reasons: list[str]):
         """Start generating details in a background thread."""
         self.diff = diff
         self.thread = threading.Thread(
@@ -30,7 +28,7 @@ class BackgroundDetailGenerator:
         )
         self.thread.start()
 
-    def _generate_details(self, diff: str, pr_reasons: List[str]):
+    def _generate_details(self, diff: str, pr_reasons: list[str]):
         """Generate details in the background thread."""
         try:
             self.details = backend.generate_pr_details(diff, pr_reasons)
@@ -39,7 +37,7 @@ class BackgroundDetailGenerator:
         finally:
             self.completed = True
 
-    def get_details(self, timeout: Optional[float] = None) -> Optional[List[dict]]:
+    def get_details(self, timeout: float | None = None) -> list[dict] | None:
         """Get the generated details, waiting for completion if necessary."""
         if self.thread and self.thread.is_alive():
             self.thread.join(timeout=timeout)
@@ -83,7 +81,7 @@ def show_config():
     try:
         config.get_api_key()
         print("API key: ✓ Configured")
-    except:
+    except Exception:
         print("API key: ✗ Not configured")
 
 
@@ -96,7 +94,7 @@ def new(reasons: str):
 
 @click.command()
 def list_details():
-    """Lists all the detail files and their contents."""
+    """Lists all the detail-note files and their contents."""
     backend.list_details()
 
 
@@ -105,7 +103,6 @@ def _pretty_box():
     lines = [
         "Enter a reason for this PR",
         "Use #<issue_num> to reference the issue",
-        "(Leave all blank to use pregenerated details)",
         "(Leave blank to finish)",
     ]
 
@@ -130,7 +127,7 @@ def _pretty_box():
     print(border_color + bottom)
 
 
-def _get_pr_reasons(initial_reasons: str) -> List[str]:
+def _get_pr_reasons(initial_reasons: str) -> list[str]:
     """Gets the reasons for the PR from the user.
 
     Args:
@@ -163,7 +160,7 @@ def _confirm_clear_details():
         backend.clear_details()
 
 
-def _review_details(details: List[dict], diff: str, pr_reasons: List[str]):
+def _review_details(details: list[dict], diff: str, pr_reasons: list[str]):
     """Handles the review process of the generated details.
 
     Args:
@@ -231,7 +228,7 @@ def main(reasons: str = ""):
     """The main function for the auto_detail CLI."""
     init(autoreset=True)
 
-    if not backend.test_repo():
+    if not backend.is_git_repo():
         print(Fore.RED + "No git repository found at current location.")
         print(Style.RESET_ALL, end="")
         return

@@ -38,7 +38,7 @@ def test_pretty_box_prints_basic_structure(capsys, load_auto_detail):
     mod._pretty_box()
     out = capsys.readouterr().out
     assert "Enter a reason for this PR" in out
-    assert "Use #issue_num to reference issues" in out
+    assert "Use #<issue_num> to reference the issue" in out
     assert "(Leave blank to finish)" in out
     assert "╭" in out and "╯" in out
 
@@ -100,7 +100,7 @@ def test_review_details_edit_ai_then_approve(monkeypatch, load_auto_detail):
     mod = load_auto_detail
     original = {"summary": "S", "type": "feature", "description": "D"}
     # Sequence: first choose edit with ai, then approve
-    mod.inquirer.select = make_selector(["Edit detail with ai", "Approve"])
+    mod.inquirer.select = make_selector(["Edit detail with AI", "Approve"])
 
     def _edit_detail(diff, detail, pr_reasons, edit):
         assert edit  # user provided edit prompt

@@ -1,10 +1,11 @@
-"""This module provides backend functionality for auto_detail."""
+"""Backend functionality of auto_detail."""
 
 import os
 import uuid
+
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from colorama import Fore, Style
 from git import Repo
@@ -12,7 +13,7 @@ from google import genai
 from google.genai import types
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString as LSS
-from src import config
+from auto_detail import config
 
 DETAIL_ROOT = Path(".detail/notes")
 
@@ -62,7 +63,7 @@ def list_details():
             print(f.read())
 
 
-def clear_details() -> List[str]:
+def clear_details() -> list[str]:
     """Removes all untracked and unstaged detail files.
 
     Returns:
@@ -103,14 +104,15 @@ def get_diff() -> str:
     base_branch = config.get_base_branch()
 
     try:
-        # Try to get diff against the configured base branch
+        # Try to get diff against the configured base branch.
         diff_output = repo.git.diff(base_branch)
         if diff_output.strip():
             return diff_output
-        # If no diff against base branch, fall back to working directory changes
+        # If no diff against base branch, fall back to working directory changes.
         return _get_working_directory_diff(repo)
     except Exception:
-        # If base branch doesn't exist or other error, fall back to working directory changes
+        # If base branch doesn't exist or other error, fall back to working directory
+        # changes
         return _get_working_directory_diff(repo)
 
 
@@ -178,7 +180,7 @@ def _get_gemini_client() -> genai.Client:
     return genai.Client(api_key=config.get_api_key())
 
 
-def _get_new_detail_description() -> Dict[str, Any]:
+def _get_new_detail_description() -> dict[str, Any]:
     """Returns the tool description for the new_detail function."""
     return {
         "name": "new_detail",
@@ -195,7 +197,8 @@ def _get_new_detail_description() -> Dict[str, Any]:
                 },
                 "type": {
                     "type": "STRING",
-                    "description": "The PR category. API is a MAJOR change to the public API.",
+                    "description": "The PR category. API is a MAJOR change to the"
+                    " public API.",
                     "enum": ["feature", "bug", "api", "trivial"],
                 },
                 "description": {
@@ -211,7 +214,7 @@ def _get_new_detail_description() -> Dict[str, Any]:
 
 
 def _generate_content(
-    client: genai.Client, system_instruction: str, content: List[types.Content]
+    client: genai.Client, system_instruction: str, content: list[types.Content]
 ) -> genai.types.GenerateContentResponse:
     """Generates content using the Gemini API.
 
@@ -240,7 +243,7 @@ def _generate_content(
     )
 
 
-def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> Dict[str, str]:
+def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> dict[str, str]:
     """Edits a pull request detail using the Gemini API.
 
     Args:
@@ -254,15 +257,15 @@ def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> Dict[str,
     """
     client = _get_gemini_client()
     system_instruction = (
-        "You are a skilled software engineer. Your task is to effectively and skillfully "
-        "review the diff of a pull request and edit a given detail."
+        "You are a skilled software engineer. Your task is to effectively and"
+        " skillfully review the diff of a pull request and edit a given detail."
     )
     contents = [
         types.Content(
             role="user",
             parts=[
                 types.Part(
-                    text=f"Oridinal detail: {detail}. Reasons for pr: {pr_reasons}. "
+                    text=f"Original detail: {detail}. Reasons for pr: {pr_reasons}. "
                     f"User edit request: {edit} Diff: {diff}"
                 )
             ],
@@ -282,7 +285,7 @@ def edit_detail(diff: str, detail: str, pr_reasons: str, edit: str) -> Dict[str,
     return {}
 
 
-def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
+def generate_pr_details(diff: str, pr_reasons: str) -> list[dict[str, str]]:
     """Generates pull request details using the Gemini API.
 
     Args:
@@ -290,14 +293,16 @@ def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
         pr_reasons: The reasons for the pull request.
 
     Returns:
-        A list of dictionaries, each containing the summary, type, and description of a detail.
+        A list of `dict`s, each containing the summary, type, and description of a
+        detail.
     """
     client = _get_gemini_client()
     system_instruction = (
         "You are a senior software engineer. Review the pull request diff and "
         "write a clear and concise description of the changes. "
-        "Generate a new PR detail in simple language. "
-        "You may generate multiple details if necessary. "
+        "Generate a new PR detail(s) in simple language. "
+        "You may generate multiple details if it improves clarity. (i.e multiple "
+        "different feature added and bugs fixed)"
         f"\n\n Reasons for pr: {pr_reasons}"
     )
     contents = [types.Content(role="user", parts=[types.Part(text=diff)])]
@@ -319,15 +324,14 @@ def generate_pr_details(diff: str, pr_reasons: str) -> List[Dict[str, str]]:
     return details
 
 
-def test_repo() -> bool:
+def is_git_repo() -> bool:
     """Tests the current folder to see if there is a git repo.
 
     Returns:
-        True if there exists a git repo and false if not.
+        True if the current directory is within a git repo, and false if not.
     """
-
     try:
         Repo(".")
         return True
-    except:
+    except Exception:
         return False
